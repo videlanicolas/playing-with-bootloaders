@@ -9,3 +9,11 @@ Simple bootloader to get things started.
 ```bash
 $ ./run.sh helloworld
 ```
+
+## Print HEX
+
+Now the bootloader prints HEX numbers, fancy!
+
+```bash
+$ ./run.sh print_hex_addresses
+```
