@@ -10,10 +10,26 @@ Simple bootloader to get things started.
 $ ./run.sh helloworld
 ```
 
+```
+Booting from Hard Disk...
+Boot failed: could not read the boot disk
+
+Booting from Floppy...
+Hello World!
+```
+
 ## Print HEX
 
 Now the bootloader prints HEX numbers, fancy!
 
 ```bash
 $ ./run.sh print_hex_addresses
+```
+
+```
+Booting from Hard Disk...
+Boot failed: could not read the boot disk
+
+Booting from Floppy...
+0x1fa5
 ```
