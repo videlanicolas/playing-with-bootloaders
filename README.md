@@ -59,3 +59,5 @@ In 16 bit real mode we can address memory up to 0xffff = 64 KiB. We're loadng at
 Booting from Floppy...
 Disk read error!
 ```
+
+But we could read that much segments if we move to the following segment. ES is 0 in the previous example, but we can change it to 1 and load 57 sectors of disk to memory at address 0:0x0000 (ES:BX). We can even load 128 sectors! But not 129, that'll cause a disk error, because we're at the end of the segment (64 KiB).

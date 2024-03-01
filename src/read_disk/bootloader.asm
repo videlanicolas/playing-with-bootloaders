@@ -15,7 +15,7 @@ mov sp, bp      ; Make the stack start at the base.
 ; We're going to load 5 sectors from disk, that's 5 * 512 = 2.5 KiB.
 ; The data will be stored at ES:BX, and we'll pick a value far away from our stack.
 mov bx, 0x9000  ; 0x9000 is far away from the base of our stack, we're not going to use that much really.
-mov dh, 57       ; Read 5 sectors.
+mov dh, 5       ; Read 5 sectors.
 call disk_load
 
 cmp ah, 0       ; If AH is not zero then something went wrong. Don't read from memory and jump to the infinite loop.
