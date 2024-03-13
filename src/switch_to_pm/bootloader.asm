@@ -19,6 +19,26 @@ call print_string
 ;
 
 cli             ; Disable all interrupts.
+
+; Check if A20 is enabled. Enable it through a BIOS interrupt if not.
+call check_a20
+cmp ax, 1
+je load_gdt     ; If the routine said A20 is enabled, continue normally to load the GDT, we don't need to do anything else.
+
+; Ah interesting, A20 is disabled if you reached this point. Let's print a message so we know this.
+mov bx, A20_DISABLED_MSG
+call print_string
+
+call enable_a20
+jb fail_to_boot     ; If CF is set then there was a problem enabling A20.
+
+; Nice! A20 was enabled, let'ss verify.
+call check_a20
+cmp ax, 1
+jne fail_to_boot        ; If AX returned with a value other than 1, this means A20 is disabled. Fail booting.
+
+load_gdt:
+
 lgdt [GDTR]     ; Load the GDT register with the start address of the Global Descriptor Table.
 
 ; We can't alter CR0 directly, so instead load it to EAX, modify it and load it back to CR0. 
@@ -26,9 +46,12 @@ mov eax, cr0
 or eax, 1           ; We need to set bit 0 (Protection Enable, the thing that switches to protected mode).
 mov cr0, eax
 
-jmp $           ; Loop forever. We should never arrive here.
+fail_to_boot:
+
+jmp $           ; Loop forever. We should arrive here if there was a problem enabling protected mode.
 
 %include "./src/common/print_string.asm"
+%include "./src/common/check_a20.asm"
 %include "./src/common/print_string_pm.asm"
 
 [bits 32]
@@ -44,6 +67,7 @@ jmp $       ; Loop forever, in protected mode.
 ; Data
 REAL_MODE_MSG: db "Hello from real mode! We're in 16 bit land",  0x0d, 0x0a, 0
 PM_MSG: db "Hello from protected mode! We're in 32 bit land now!", 0x0d, 0x0a, 0
+A20_DISABLED_MSG: db "A20 is disabled! Callig BIOS to enable it...", 0x0d, 0x0a, 0
 
 ; Spacing and signature
 times 510 - ($ - $$) db 0   ; This line basically adds 0x00 bytes to fill up until 510 bytes.
