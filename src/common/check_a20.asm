@@ -43,5 +43,54 @@ check_a20:
     ; 
     ; 0x0000 * 16 = 0x0000 -> 0x0000 + 0x0500 = 0x000500
     ; 0xFFFF * 16 = 0xFFF0 -> 0xFFF0 + 0x0510 = 0x100500
+
+    ; Makig ES:DI
     xor ax, ax      ; This makes AX = 0. It's faster to do this operation than 'mov ax, 0' (which takes 5 bytes and more cycles).
-    mov es, ax
+    mov es, ax      ; Make ES = 0x0000
+    mov di, 0x0500  ; DI = 0x0500
+
+    ; Making DS:SI
+    not ax          ; AX was 0x0000, so now it's 0xFFFF.
+    mov ds, ax      ; Now DS = 0xFFFF
+    mov si, 0x0510  ; SI = 0x0510
+
+    ; We're going to modify the last two bytes of ES:DI and DS:SI.
+    ; We need to make sure these bytes hold the same value after out routine ends, if not we would've changed their
+    ; value, and the routine that called us might had some use for it.
+    mov byte[al], [es:di]   ; Get the byte at ES:DI address in memory
+    push ax                 ; Save it to the stack.
+    mov byte[al], [ds:si]   ; Get the byte at DS:SI address in memory
+    push ax                 ; Save it to the stack.
+
+    ; Now with the values saved in the stack, make one address have all zeros and the other address all ones.
+    mov byte[es:di], 0x00
+    mov byte[ds:si], 0xFF   ; Looping of memory might happen here!
+
+    ; We compare the lower 2 bytes addressed by ES:DI. This _should_ be 0x00 since we set it explicitly above,
+    ; but if memory is actually looping (i.e. A20 disabled) then this will hold the same value as [DS:SI], which
+    ; is 0xFF.
+    cmp byte[es:di], 0xFF
+
+    ; We now have our desired information in the Zero Flag, so let's restore the values we initially had in [ES:DI] amd [DS:SI].
+    pop ax
+    mov byte[ds:si], al     ; Remember that the last push to the stack was for [DS:SI], so restore that one first.
+
+    pop ax
+    mov byte[es:di], al     ; Restore [ES:DI] original value.
+
+    ; We're using AX as our return register.
+    mov ax, 0               ; A20 is disabled.
+    je check_a20_end        ; Here we check the CMP instruction from above. If the values were the same then keep AX with 0 since A20 is disabled.
+
+    ; Reaching this part of the routine means the jump above was not performed, so that means the values were differet.
+    ; This means A20 is enabled!
+    mov ax, 1               ; A20 is enabled.
+check_a20_end:
+    ; This is the end, restore FLAGS and registers we used.
+    pop di
+    pop es
+    pop si
+    pop ds
+    popf
+
+    ret
