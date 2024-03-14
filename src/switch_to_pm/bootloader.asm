@@ -13,33 +13,33 @@ call print_string
 
 ;
 ; In order to switch to protected mode we need to do the following:
-; 1. Disable all interrupts.
+; 1. Disable all hardware nterrupts.
 ; 2. Enable the A20 line (https://osdev.org/A20_Line). QEMU does this for us luckily, but we should check that this is actually the case.
 ; 3. Load the GDT.
 ;
 
-cli             ; Disable all interrupts.
+cli             ; Disable all hardware interrupts while we switch to protected mode.
 
 ; Check if A20 is enabled. Enable it through a BIOS interrupt if not.
 call check_a20
 cmp ax, 1
 je load_gdt     ; If the routine said A20 is enabled, continue normally to load the GDT, we don't need to do anything else.
 
-; Ah interesting, A20 is disabled if you reached this point. Let's print a message so we know this.
+; Ah interesting, if code reaches this point then A20 is disabled. Let's print a message to inform the user.
 mov bx, A20_DISABLED_MSG
 call print_string
 
 call enable_a20
 jb fail_to_boot     ; If CF is set then there was a problem enabling A20.
 
-; Nice! A20 was enabled, let'ss verify.
+; Nice! A20 was enabled, let's verify.
 call check_a20
 cmp ax, 1
 jne fail_to_boot        ; If AX returned with a value other than 1, this means A20 is disabled. Fail booting.
 
 load_gdt:
-
-lgdt [GDTR]     ; Load the GDT register with the start address of the Global Descriptor Table.
+jmp $
+; lgdt [GDTR]     ; Load the GDT register with the start address of the Global Descriptor Table.
 
 ; We can't alter CR0 directly, so instead load it to EAX, modify it and load it back to CR0. 
 mov eax, cr0
@@ -48,10 +48,11 @@ mov cr0, eax
 
 fail_to_boot:
 
-jmp $           ; Loop forever. We should arrive here if there was a problem enabling protected mode.
+jmp $           ; Loop forever. We should arrive here only if there was a problem enabling protected mode.
 
 %include "./src/common/print_string.asm"
 %include "./src/common/check_a20.asm"
+%include "./src/common/enable_a20.asm"
 %include "./src/common/print_string_pm.asm"
 
 [bits 32]

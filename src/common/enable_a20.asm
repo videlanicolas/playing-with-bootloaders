@@ -1,7 +1,7 @@
 ; This routine tries to enable A20 through BIOS interrupts.
 ; The BIOS has interrupt 15h with services:
-; * 2401h: Activate A20
-; * 2402h: Check A20 status (yeah I know, we made a huge custom implementation to check this when we could just call the BIOS...).
+; * 2401h: Activate A20.
+; * 2402h: Check A20 status (yeah I know, we made a huge custom implementation to check this, but where's the fun on callig the BIOS for us anyway?).
 ; * 2403h: Check if A20 enable/disable is supported at this interrupt routine.
 enable_a20:
     pusha               ; Save the state of all registers

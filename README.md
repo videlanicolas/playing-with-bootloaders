@@ -61,3 +61,11 @@ Disk read error!
 ```
 
 But we could read that much segments if we move to the following segment. ES is 0 in the previous example, but we can change it to 1 and load 57 sectors of disk to memory at address 1:0x0000 (ES:BX). We can even load 128 sectors! But not 129, that'll cause a disk error, because we're at the end of the segment (64 KiB).
+
+## Switch to Protected Mode
+
+This example switches from 16 bit Real Mode to 32 bit Protected mode.
+
+```bash
+$ ./run.sh switch_to_pm
+```
