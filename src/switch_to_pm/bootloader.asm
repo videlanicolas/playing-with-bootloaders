@@ -18,7 +18,7 @@ call print_string
 ; 3. Load the GDT.
 ;
 
-cli             ; Disable all hardware interrupts while we switch to protected mode.
+cli             ; Disable all hardware interrupts while we load thhe GDT.
 
 ; Disable A20, just to double check our manual check works.
 mov ax, 2400h   ; Service to disable A20 bus line.
@@ -27,7 +27,7 @@ int 15h         ; Call BIOS.
 ; Check if A20 is enabled. Enable it through a BIOS interrupt if not.
 call check_a20
 cmp ax, 1
-je gdt_start     ; If the routine said A20 is enabled, continue normally to load the GDT, we don't need to do anything else.
+je load_gdt     ; If the routine said A20 is enabled, continue normally to load the GDT, we don't need to do anything else.
 
 ; Ah interesting, if code reaches this point then A20 is disabled. Let's print a message to inform the user.
 mov bx, A20_DISABLED_MSG
@@ -45,6 +45,8 @@ jne fail_to_boot        ; If AX returned with a value other than 1, this means A
 mov bx, A20_ENABLED_MSG
 call print_string
 
+load_gdt:
+
 xor ax, ax
 mov ds, ax
 
@@ -56,9 +58,9 @@ mov eax, cr0
 or eax, 1           ; We need to set bit 0 (Protection Enable, the thing that switches to protected mode).
 mov cr0, eax
 
-; At this poit we have everything ready to switch to protected mode, but it's not enabled just yet.
+; At this point we have everything ready to switch to protected mode, but it's not enabled just yet.
 ; The CPU does a thing called "pipelining", more details here: https://en.wikipedia.org/wiki/Instruction_pipelining
-; Essetially it's tryinng to be efficient when executing instructions. The CPU has to fetch the next instruction,
+; Esentially it's trying to be efficient when executing instructions. The CPU has to fetch the next instruction,
 ; decode it, execute it, access memory and write registers. The CPU can execute one instruction while fetching the
 ; one, and writing to memory for the execution results of the previous memory. This is good because it takes advantage
 ; of every clock cycle.
@@ -82,7 +84,6 @@ jmp $           ; Loop forever. We should arrive here only if there was a proble
 %include "./src/common/print_string.asm"
 %include "./src/common/check_a20.asm"
 %include "./src/common/enable_a20.asm"
-%include "./src/common/print_string_pm.asm"
 %include "./src/common/load_gdt.asm"
 
 [bits 32]
@@ -96,6 +97,7 @@ protected_mode_start:
 mov ax, 10h         ; NULL is at 0x00, CS is at 0x08, 8 bytes more and we get the data segment at 0x10.
 mov ds, ax          ; Make the Data Segment = 0x10.
 mov ss, ax          ; Also make the stack segment equal to the data segment.
+mov es, ax          ; Make the Extra Segment equal to the data segment as well.
 
 mov esp, 090000h    ; ESP is the stack pointer in 32 bit world. Set it to a far away value (+1 MiB, which
                     ; is far away from our bootloader and BIOS code).
@@ -111,6 +113,8 @@ REAL_MODE_MSG: db "Hello from real mode!", 0x0d, 0x0a, 0
 PM_MSG: db "Hello from protected mode!", 0x0d, 0x0a, 0
 A20_DISABLED_MSG: db "A20 is disabled! Callig BIOS to enable it...", 0x0d, 0x0a, 0
 A20_ENABLED_MSG: db "A20 enabled!", 0x0d, 0x0a, 0
+
+%include "./src/common/print_string_pm.asm"
 
 ; Spacing and signature
 times 510 - ($ - $$) db 0   ; This line basically adds 0x00 bytes to fill up until 510 bytes.

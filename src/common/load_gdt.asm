@@ -61,6 +61,7 @@ db 11001111b
 ; The remaining byte are the remainig bits of our base address, so all 0s.
 db 0
 
+gdt_data:
 ; Data segment
 ; Starts of the same as Code segment.
 dw 0xffff       ; Set the first bits of limit. 
@@ -85,5 +86,5 @@ gdt_end:
 ; In order for the CPU to learn where this GDT is located, we need to create a GDT descriptor table.
 ; This is a 48 bit structure.
 gdt_desc:
-    db gdt_end - gdt_start  ; Size of the entire GDT. We use labels here and let NASM calculate it for us.
-    dw gdt_start            ; Address of the start of the GDT.
+    dw gdt_end - gdt_start - 1  ; Size of the entire GDT. We use labels here and let NASM calculate it for us.
+    dd gdt_start                ; Address of the start of the GDT.
