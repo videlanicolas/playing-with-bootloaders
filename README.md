@@ -64,8 +64,12 @@ But we could read that much segments if we move to the following segment. ES is 
 
 ## Switch to Protected Mode
 
-This example switches from 16 bit Real Mode to 32 bit Protected mode.
+This example switches from 16 bit Real Mode to 32 bit Protected mode. The code has a lot of comments on each step I take, explaining everything that happens in the middle.
 
 ```bash
 $ ./run.sh switch_to_pm
 ```
+
+![Text showing switch to protected mode](img/switch_to_pm.png)
+
+In the example I focus on A20 a lot, not because it's required to do all the things I did here to switch to PM (bootloaders use BIOS functionality to check rather than the memory loop thing I did here) but because it's an interesting problem to look at. I created an assembler routine [check_a20.asm](src/common/check_a20.asm) to do a manual check by checking if two bytes coincide on different addresses (one that looped over the memory). This is educational only, if you need to check if A20 is enabled just use the BIOS (`ax = 2402h` and `int 15h`).

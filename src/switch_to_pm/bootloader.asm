@@ -16,9 +16,11 @@ call print_string
 ; 1. Disable all hardware nterrupts.
 ; 2. Enable the A20 line (https://osdev.org/A20_Line). QEMU does this for us luckily, but we should check that this is actually the case.
 ; 3. Load the GDT.
+; 4. Set CR0 bit 0, this bit indicates if Protected Mode should be enabled.
+; 5. Make a far jump.
 ;
 
-cli             ; Disable all hardware interrupts while we load thhe GDT.
+cli             ; Disable all hardware interrupts while we switch to protected mode. We should re-enable them afterwards.
 
 ; Disable A20, just to double check our manual check works.
 mov ax, 2400h   ; Service to disable A20 bus line.
@@ -47,9 +49,6 @@ call print_string
 
 load_gdt:
 
-xor ax, ax
-mov ds, ax
-
 ; Load the GDT descriptor.
 lgdt [gdt_desc]
 
@@ -65,7 +64,7 @@ mov cr0, eax
 ; one, and writing to memory for the execution results of the previous memory. This is good because it takes advantage
 ; of every clock cycle.
 ;
-; But it means that at this point it has instructions pertaining to 16 bit world in the pipeline, from pasts and 
+; But it means that at this point it has instructions pertaining to 16 bit world in the pipeline, from past and 
 ; future instructions. We can't have that when we switch to 32 bit, so we need to "clear the pipeline". But how do we do this?
 ; The CPU is good at predicting what actions are needed next when the instructions are easy enough, like "MOV", "ADD", "INC".
 ; But when the instruction is "JMP" or "CALL" the CPU has very little idea what the next instruction will be, so
@@ -110,7 +109,7 @@ jmp $       ; Loop forever, in protected mode.
 
 ; Data
 REAL_MODE_MSG: db "Hello from real mode!", 0x0d, 0x0a, 0
-PM_MSG: db "Hello from protected mode!", 0x0d, 0x0a, 0
+PM_MSG: db "Hello from protected mode!", 0
 A20_DISABLED_MSG: db "A20 is disabled! Callig BIOS to enable it...", 0x0d, 0x0a, 0
 A20_ENABLED_MSG: db "A20 enabled!", 0x0d, 0x0a, 0
 
