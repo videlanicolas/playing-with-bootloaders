@@ -2,6 +2,8 @@
 
 It's been a while since I've coded in assembler, so I figured I'd play with bootloaders to brush up my assembler knowledge and also do something fun along the way.
 
+I've been reading [Writing a Simple Operating System — from Scratch](https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf) and seemed like a nice read to get started with bootloaders and transition to OS development. This book is not finished, so I've read [OS Dev Wiki](https://wiki.osdev.org) to complete my journey in OS development.
+
 ## Helloworld
 
 Simple bootloader to get things started.
