@@ -24,5 +24,3 @@ hello_kernel:
 	# Create the bootable image, put the bootloader first and the kernel second.
 	rm build/hello_kernel/os.img || true
 	cat build/hello_kernel/hello_kernel.img build/hello_kernel/kernel.bin > build/hello_kernel/os.img
-	# dd if=build/hello_kernel/hello_kernel.img of=build/hello_kernel/os.img
-	# dd if=build/hello_kernel/kernel.bin of=build/hello_kernel/os.img oflag=append conv=notrunc bs=1G
