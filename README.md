@@ -80,6 +80,8 @@ In the example I focus on A20 a lot, not because it's required to do all the thi
 
 This example boots a simple Kernel that shows `!` at the top left of the screen (the start of the video memory, row 0 column 0). This example consists of a bootloader and a simple Kernel, the bootloader goes through all the steps we already know (load Kernel sectors from disk to memory, clear interrupts, enable A20, load GDT, set CR0 bit 0 and far jump to code segment), with the extra addition of calling the Kernel entrypoint at the end. The Kernel is a simple `main` function that sets `!` in `0xb8000` (i.e. the start of the video memory), to prove ourselves that our Kernel has been called.
 
+In here we have 3 files: the [bootloader](src/hello_kernel/bootloader.asm) (which contains code we already know), [kernel.c](src/hello_kernel/kernel.c) (which contains our Kernel code), and a file where our boorloader lands and has the task of finding `main` in our Kernel and call it (this file is called [kernel_entry.asm](src/hello_kernel/kernel_entry.asm)). This is generally the correct and safe way to call our Kernel code.
+
 ```bash
 $ make hello_kernel && \
     qemu-system-i386 -fda build/hello_kernel/os.img
