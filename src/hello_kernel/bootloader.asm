@@ -96,7 +96,7 @@ mov ds, ax          ; Make the Data Segment = 0x10.
 mov ss, ax          ; Also make the stack segment equal to the data segment.
 mov es, ax          ; Make the Extra Segment equal to the data segment as well.
 
-mov esp, 090000h    ; ESP is the stack pointer in 32 bit world. Set it to a far away value (+1 MiB, which
+mov esp, 090000h    ; ESP is the stack pointer in 32 bit world. Set it to a far away value (+1 MiB).
 
 mov ebx, PM_MODE_MSG
 call print_string_pm
